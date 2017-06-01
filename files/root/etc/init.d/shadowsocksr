@@ -503,9 +503,9 @@ wget-ssl --no-check-certificate https://raw.githubusercontent.com/gfwlist/gfwlis
  if [ "\$?" == "0" ]; then
          /usr/share/shadowsocksr/ssr-gfw
          icunt=\$(cat /tmp/gfwnew.txt | wc -l)
-         icunt1=\$(cat /etc/dnsmasq.ssr/gfw_list.conf | wc -l)
+         icunt1=\$(cat /etc/dnsmasq.d/gfw_list.conf | wc -l)
               if [ "\$icunt" != "\$icunt1" ];then
-                           cp -f /tmp/gfwnew.txt /etc/dnsmasq.ssr/gfw_list.conf
+                           cp -f /tmp/gfwnew.txt /etc/dnsmasq.d/gfw_list.conf
               fi
 fi
 rm -rf  /tmp/gfwnew.txt
@@ -521,15 +521,15 @@ autoupdate=$(uci_get_by_type global auto_update)
 weekupdate=$(uci_get_by_type global week_update)
 dayupdate=$(uci_get_by_type global time_update)
 if [ "$autoupdate" = "1" ];then
-  if [ "$weekupdate" = "7" ];then
-      echo "0 $dayupdate * * * /usr/share/shadowsocksr/updategfwlist.sh" >> /etc/crontabs/root
-      echo "0 $dayupdate * * * /usr/share/shadowsocksr/update_chinaroute.sh" >> /etc/crontabs/root
-   else
-      echo "0 $dayupdate * * $weekupdate /usr/share/shadowsocksr/updategfwlist.sh" >> /etc/crontabs/root
-      echo "0 $dayupdate * * $weekupdate /usr/share/shadowsocksr/update_chinaroute.sh" >> /etc/crontabs/root
-   fi
+	if [ "$weekupdate" = "7" ];then
+      		echo "0 $dayupdate * * * /usr/share/shadowsocksr/updategfwlist.sh" >> /etc/crontabs/root
+      		echo "0 $dayupdate * * * /usr/share/shadowsocksr/update_chinaroute.sh" >> /etc/crontabs/root
+   	else
+      		echo "0 $dayupdate * * $weekupdate /usr/share/shadowsocksr/updategfwlist.sh" >> /etc/crontabs/root
+      		echo "0 $dayupdate * * $weekupdate /usr/share/shadowsocksr/update_chinaroute.sh" >> /etc/crontabs/root
+   	fi
 else
-  stop_update
+  	stop_update
 fi
 }
 
