@@ -25,7 +25,7 @@ kcp_enable_flag=0
 kcp_flag=0
 gfw_enable=0
 dns_enable_flag=0
-switch_enable=0
+switch_enable=1
 switch_server=$1
 
 
@@ -192,17 +192,17 @@ get_jump_mode(){
 }
 
 clean_firewall_rule() {
-  ib_nat_exist=`iptables -t nat -L PREROUTING | grep -c SHADOWSOCKS`
-  if [ ! -z "$ib_nat_exist" ];then
-     	until [ "$ib_nat_exist" = 0 ]
-    	do 
-       	iptables -t nat -D OUTPUT -p tcp -m set --match-set gfwlist dst -j REDIRECT --to-ports 1080 2>/dev/null
-       	iptables -t nat -D PREROUTING -p tcp -j SHADOWSOCKS 2>/dev/null
-       	iptables -t nat -D PREROUTING  -p udp --dport 53 -j DNAT --to $lanip 2>/dev/null
-       	iptables -t mangle -D PREROUTING -p udp -j SHADOWSOCKS 2>/dev/null
-       	ib_nat_exist=`expr $ib_nat_exist - 1`
-  	done
-  fi
+  	ib_nat_exist=`iptables -t nat -L PREROUTING | grep -c SHADOWSOCKS`
+  	if [ ! -z "$ib_nat_exist" ];then
+     		until [ "$ib_nat_exist" = 0 ]
+    		do 
+       		iptables -t nat -D OUTPUT -p tcp -m set --match-set gfwlist dst -j REDIRECT --to-ports 1080 2>/dev/null
+       		iptables -t nat -D PREROUTING -p tcp -j SHADOWSOCKS 2>/dev/null
+       		iptables -t nat -D PREROUTING  -p udp --dport 53 -j DNAT --to $lanip 2>/dev/null
+       		iptables -t mangle -D PREROUTING -p udp -j SHADOWSOCKS 2>/dev/null
+       		ib_nat_exist=`expr $ib_nat_exist - 1`
+  		done
+  	fi
 }
 
 del_firewall_rule() {
@@ -440,10 +440,7 @@ start() {
 	start_redir
 	add_dnsmasq
 	start_rules
-	if [ "$(uci_get_by_type global enable_switch)" = "1" ] && [ "$(uci_get_by_name $GLOBAL_SERVER switch_enable)" = "1" ] && [ -z "$switch_server" ] ;then
-		service_start /usr/share/shadowsocksr/ssr-switch start 60 5
-		switch_enable=1
-	fi
+	service_start /usr/share/shadowsocksr/ssr-switch start 60 5
 
 	if [ $(uci_get_by_type global monitor_enable) = 1 ] ;then
 		service_start /usr/share/shadowsocksr/ssr-monitor $server_count $redir_tcp $redir_udp $tunnel_enable $kcp_enable_flag $local_enable $dns_enable_flag $switch_enable
@@ -489,56 +486,33 @@ stop() {
         stop_update
 }
 stop_update() {
-   sed -i '/updategfwlist/d' /etc/crontabs/root >/dev/null 2>&1 &
-   sed -i '/update_chinaroute.sh/d' /etc/crontabs/root >/dev/null 2>&1 &
+   	sed -i '/updategfwlist/d' /etc/crontabs/root >/dev/null 2>&1 &
+   	sed -i '/update_chinaroute.sh/d' /etc/crontabs/root >/dev/null 2>&1 &
 }
 
 set_update() {
-
-
-if [ ! -e "/usr/share/shadowsocksr/updategfwlist.sh" ];then
-cat  >/usr/share/shadowsocksr/updategfwlist.sh  <<EOF
-#!/bin/sh
-wget-ssl --no-check-certificate https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt -O /tmp/gfw.b64
- if [ "\$?" == "0" ]; then
-         /usr/share/shadowsocksr/ssr-gfw
-         icunt=\$(cat /tmp/gfwnew.txt | wc -l)
-         icunt1=\$(cat /etc/dnsmasq.d/gfw_list.conf | wc -l)
-              if [ "\$icunt" != "\$icunt1" ];then
-                           cp -f /tmp/gfwnew.txt /etc/dnsmasq.d/gfw_list.conf
-              fi
-fi
-rm -rf  /tmp/gfwnew.txt
-rm -rf  /tmp/china_ssr.txt
-rm -rf  /tmp/gfw.b64
-EOF
-chmod +x /usr/share/shadowsocksr/updategfwlist.sh
-fi
-
-
-
-autoupdate=$(uci_get_by_type global auto_update)
-weekupdate=$(uci_get_by_type global week_update)
-dayupdate=$(uci_get_by_type global time_update)
-if [ "$autoupdate" = "1" ];then
-	if [ "$weekupdate" = "7" ];then
-      		echo "0 $dayupdate * * * /usr/share/shadowsocksr/updategfwlist.sh" >> /etc/crontabs/root
-      		echo "0 $dayupdate * * * /usr/share/shadowsocksr/update_chinaroute.sh" >> /etc/crontabs/root
-   	else
-      		echo "0 $dayupdate * * $weekupdate /usr/share/shadowsocksr/updategfwlist.sh" >> /etc/crontabs/root
-      		echo "0 $dayupdate * * $weekupdate /usr/share/shadowsocksr/update_chinaroute.sh" >> /etc/crontabs/root
-   	fi
-else
-  	stop_update
-fi
+	autoupdate=$(uci_get_by_type global auto_update)
+	weekupdate=$(uci_get_by_type global week_update)
+	dayupdate=$(uci_get_by_type global time_update)
+	if [ "$autoupdate" = "1" ];then
+		if [ "$weekupdate" = "7" ];then
+      			echo "0 $dayupdate * * * /usr/share/shadowsocksr/updategfwlist.sh" >> /etc/crontabs/root
+      			echo "0 $dayupdate * * * /usr/share/shadowsocksr/update_chinaroute.sh" >> /etc/crontabs/root
+   		else
+      			echo "0 $dayupdate * * $weekupdate /usr/share/shadowsocksr/updategfwlist.sh" >> /etc/crontabs/root
+      			echo "0 $dayupdate * * $weekupdate /usr/share/shadowsocksr/update_chinaroute.sh" >> /etc/crontabs/root
+   		fi
+	else
+  		stop_update
+	fi
 }
 
 boot() {
 
-  (sleep $(uci_get_by_type global dalay_time) && start >/dev/null 2>&1) &
-   start
+  	(sleep $(uci_get_by_type global dalay_time) && start >/dev/null 2>&1) &
+   	start
 
-  return 0
+  	return 0
 }
 
 
