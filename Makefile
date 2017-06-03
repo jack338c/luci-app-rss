@@ -65,18 +65,15 @@ define Package/openwrt-ssr/prerm
 # check if we are on real system
  ln -s /sbin/ip-full /usr/bin/ip
 if [ -z "$${IPKG_INSTROOT}" ]; then
-    echo "Removing rc.d symlink for shadowsocksr"
-     /etc/init.d/shadowsocksr disable
-     /etc/init.d/shadowsocksr stop
-    echo "Removing firewall rule for shadowsocksr"
-	  uci -q batch <<-EOF >/dev/null
-		delete firewall.shadowsocksr
-		commit firewall
+    	echo "Removing rc.d symlink for shadowsocksr"
+     	/etc/init.d/shadowsocksr disable
+     	/etc/init.d/shadowsocksr stop
+    	echo "Removing firewall rule for shadowsocksr"
+	uci -q batch <<-EOF >/dev/null
+	delete firewall.shadowsocksr
+	commit firewall
 EOF
-if [ "$(1)" = "GFW" ] ;then
-            rm -f /etc/dnsmasq.conf
-	fi
-fi
+
 exit 0
 endef
 
@@ -87,8 +84,8 @@ Package/luci-app-shadowsocksR-GFW/prerm = $(call Package/openwrt-ssr/prerm,GFW)
 define Package/luci-app-shadowsocksR-Server/prerm
 #!/bin/sh
 if [ -z "$${IPKG_INSTROOT}" ]; then
- /etc/init.d/shadowsocksr disable
- /etc/init.d/shadowsocksr stop
+ 	/etc/init.d/shadowsocksr disable
+ 	/etc/init.d/shadowsocksr stop
 fi 
 exit 0
 
@@ -212,8 +209,6 @@ define Package/luci-app-shadowsocksR-GFW/install
 	$(INSTALL_BIN) ./files/root/etc/uci-defaults/luci-shadowsocksr $(1)/etc/uci-defaults/luci-shadowsocksr
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/ss-tunnel $(1)/usr/bin/ssr-tunnel
-	$(INSTALL_DIR) $(1)/bin
-	$(INSTALL_BIN) ./files/ethinfo $(1)/bin/ethinfo
 	$(INSTALL_DIR) $(1)/usr/share/shadowsocksr
 	$(INSTALL_BIN) ./files/usr/share/shadowsocksr/*  $(1)/usr/share/shadowsocksr/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/ss-check $(1)/usr/share/shadowsocksr/ssr-check	
