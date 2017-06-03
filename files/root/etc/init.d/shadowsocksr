@@ -41,33 +41,33 @@ uci_get_by_type() {
 gen_config_file() {
 
          local host=$(uci_get_by_name $1 server)
-	  echo "$(date): 解析服务器地址:$host" 
-         if echo $host|grep -E "^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$">/dev/null; then         
+	
+	if echo $host|grep -E "^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$">/dev/null; then         
         	hostip=${host}
-       	elif  [ "$host" != "${host#*:[0-9a-fA-F]}" ] ;then
+	elif  [ "$host" != "${host#*:[0-9a-fA-F]}" ] ;then
 		hostip=${host}
-         else
+        else
          	hostip=`ping ${host} -s 1 -c 1 | grep PING | cut -d'(' -f 2 | cut -d')' -f1`
          	if echo $hostip|grep -E "^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$">/dev/null; then
          		hostip=${hostip}
          	else
          		hostip=${host}
          	fi
-         fi
-         [ $2 = "0" -a  $kcp_flag = "1" ] && hostip="127.0.0.1"
-         if [ $2 = "0" ] ;then
+        fi
+        [ $2 = "0" -a  $kcp_flag = "1" ] && hostip="127.0.0.1"
+        if [ $2 = "0" ] ;then
         	config_file=$CONFIG_FILE
-         elif [ $2 = "1" ]; then
+        elif [ $2 = "1" ]; then
         	config_file=$CONFIG_UDP_FILE
-         else
+        else
       	  	config_file=$CONFIG_SOCK5_FILE
-         fi
-         if [ $(uci_get_by_name $1 fast_open) = "1" ] ;then
+        fi
+        if [ $(uci_get_by_name $1 fast_open) = "1" ] ;then
          	fastopen="true";
-         else
+        else
          	fastopen="false";
-         fi
-	  cat <<-EOF >$config_file
+        fi
+	 cat <<-EOF >$config_file
 		{
 		    
 		    "server": "$hostip",
@@ -95,8 +95,8 @@ get_arg_out() {
 start_rules() {
  	
 	echo "$(date): udp_server:$udp_server" 
-       /etc/init.d/ipset.sh start
-   	echo "$(date): 开始加载防火墙规则..."     
+       	/etc/init.d/ipset.sh start
+
  	IPSET_CH="china"
 	IPSET_GFW="gfwlist"
 	IPSET_CHN="chnroute"
@@ -147,7 +147,7 @@ start_rules() {
 	load_acl
 	iptables -t nat -A SHADOWSOCKS -j $(get_action_chain $(uci_get_by_type global gfw_enable))
 	[ "$(uci_get_by_type global gfw_enable)" == "gm" ] && iptables -t mangle -A SHADOWSOCKS -j $(get_action_chain $(uci_get_by_type global gfw_enable))
-	return $?
+	
 }
 
 
@@ -291,11 +291,7 @@ server {
 	purge_cache=off;
 }
 EOF
-
 	/usr/sbin/pdnsd -c /var/etc/pdnsd.conf -d
-
-
-
 }
 
 start_redir() {
@@ -338,12 +334,9 @@ start_redir() {
 
 
 add_dnsmasq(){
-
- 	echo "$(date): 选择DNS解析模式"
 	local mode=$(uci_get_by_type global dns_enable)
 	case $mode in
           	1)
-			echo "$(date): DNS解析模式:pdnsd"
 			local dnsstr="$(uci_get_by_type global tunnel_forward 8.8.4.4:53)"
 			local dnsserver=`echo "$dnsstr"|awk -F ':'  '{print $1}'`
 			local dnsport=`echo "$dnsstr"|awk -F ':'  '{print $2}'`
@@ -352,12 +345,10 @@ add_dnsmasq(){
  			dns_enable_flag=4
 		;;
 		0)
-			echo "$(date): DNS解析模式:ssr_tunnel"
  			service_start /usr/bin/ssr-tunnel -c $CONFIG_FILE -b 0.0.0.0 -u -l 1053 -L $(uci_get_by_type global tunnel_forward 8.8.4.4:53) -f /var/run/ssr-dns.pid
 			dns_enable_flag=1
 		;;
 		2)
-			echo "$(date): DNS解析模式:Pcap_DNSProxy"
 			sed -i '/conf-dir/d' /etc/dnsmasq.conf 
 			sed -i '/server=/d' /etc/dnsmasq.conf 	
 			echo "no-resolv" >> /etc/dnsmasq.conf
@@ -371,7 +362,6 @@ add_dnsmasq(){
 			dns_enable_flag=3
 		;;
 		3)
-			echo "$(date): DNS解析模式:dns2socks"
 	  		/usr/bin/ssr-local \
 			-c $CONFIG_FILE \
 			-l $(uci_get_by_type socks5_proxy local_port 1080) \
@@ -400,9 +390,6 @@ add_dnsmasq(){
 	if [ $userconf -gt 0  ];then
  		ln -s /etc/dnsmasq.d/user.conf /tmp/dnsmasq.d/user.conf
 	fi
-
-
-	echo "$(date): 重启Dnsmasq。。。"
 	/etc/init.d/dnsmasq restart 
 }
 
@@ -438,7 +425,7 @@ start() {
 	start_rules
 	service_start /usr/share/shadowsocksr/ssr-switch start 60 5
 
-	if [ $(uci_get_by_type global monitor_enable) = 1 ] ;then
+	if [ "$(uci_get_by_type global monitor_enable)" = "1" ] ;then
 		service_start /usr/share/shadowsocksr/ssr-monitor $server_count $redir_tcp $redir_udp $tunnel_enable $kcp_enable_flag $local_enable $dns_enable_flag $switch_enable
 	fi
        set_update
@@ -504,10 +491,8 @@ set_update() {
 }
 
 boot() {
-
   	(sleep $(uci_get_by_type global dalay_time) && start >/dev/null 2>&1) &
    	start
-
   	return 0
 }
 
