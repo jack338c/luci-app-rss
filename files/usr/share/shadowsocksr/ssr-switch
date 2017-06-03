@@ -34,19 +34,19 @@ CURRENT_SERVER=$DEFAULT_SERVER
 
 #判断代理是否正常
 check_proxy() {
-/usr/share/shadowsocksr/ssr-check www.youtube.com  80 $switch_time 1
-if [ "$?" == "0" ]; then
-      return 0
-else
-      /usr/share/shadowsocksr/ssr-check www.baidu.com  80 $switch_time 1
-      if [ "$?" == "0" ]; then
-      #goole不通baidu通则不正常
-               return 1
-      else
-               return 2
-      fi
-fi
-return 0
+	/usr/share/shadowsocksr/ssr-check www.youtube.com  80 $switch_time 1
+	if [ "$?" == "0" ]; then
+      		return 0
+	else
+      		/usr/share/shadowsocksr/ssr-check www.baidu.com  80 $switch_time 1
+      		if [ "$?" == "0" ]; then
+      		#goole不通baidu通则不正常
+               		return 1
+      		else
+               		return 2
+      		fi
+	fi
+	return 0
 }
 
 
