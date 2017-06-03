@@ -9,23 +9,18 @@ function index()
 	end
 
 
-               entry({"admin", "services", "shadowsocksr"},alias("admin", "services", "shadowsocksr", "status"),_("ShadowSocksR"), 10).dependent = true
-               entry({"admin", "services", "shadowsocksr", "client"},arcombine(cbi("shadowsocksr/client"), cbi("shadowsocksr/client-config")),_("Basic settings"), 20).leaf = true
-               entry({"admin", "services", "shadowsocksr", "clientlist"},arcombine(cbi("shadowsocksr/clientlist"), cbi("shadowsocksr/client-config")),_("Client List"), 30).leaf = true
-               entry({"admin", "services", "shadowsocksr", "AccessControl"},arcombine(cbi("shadowsocksr/AccessControl"), cbi("shadowsocksr/client-config")),_("Access Control"), 80).leaf = true
-               entry({"admin", "services", "shadowsocksr", "gfwlist"},arcombine(cbi("shadowsocksr/gfwlist"), cbi("shadowsocksr/client-config")),_("规则列表"), 40).leaf = true
-   
-
+               	entry({"admin", "services", "shadowsocksr"},alias("admin", "services", "shadowsocksr", "status"),_("ShadowSocksR"), 10).dependent = true
+               	entry({"admin", "services", "shadowsocksr", "client"},arcombine(cbi("shadowsocksr/client"), cbi("shadowsocksr/client-config")),_("Basic settings"), 20).leaf = true
+               	entry({"admin", "services", "shadowsocksr", "clientlist"},arcombine(cbi("shadowsocksr/clientlist"), cbi("shadowsocksr/client-config")),_("Client List"), 30).leaf = true
+               	entry({"admin", "services", "shadowsocksr", "AccessControl"},arcombine(cbi("shadowsocksr/AccessControl"), cbi("shadowsocksr/client-config")),_("Access Control"), 80).leaf = true
+               	entry({"admin", "services", "shadowsocksr", "gfwlist"},arcombine(cbi("shadowsocksr/gfwlist"), cbi("shadowsocksr/client-config")),_("规则列表"), 40).leaf = true
 		entry({"admin","services","shadowsocksr","blacklist"},cbi("shadowsocksr/blacklist"),_("设置黑名单"),60).leaf=true
 		entry({"admin","services","shadowsocksr","whitelist"},cbi("shadowsocksr/whitelist"),_("设置白名单"),70).leaf=true
-
 		entry({"admin", "services", "shadowsocksr", "status"},cbi("shadowsocksr/status"),_("Status"), 10).leaf = true
-
 		entry({"admin", "services", "shadowsocksr", "refresh"}, call("refresh_data"))
 		entry({"admin", "services", "shadowsocksr", "checkport"}, call("check_port"))
-	
-entry({"admin","services","shadowsocksr","china"},call("china_status")).leaf=true
-entry({"admin","services","shadowsocksr","foreign"},call("foreign_status")).leaf=true
+		entry({"admin","services","shadowsocksr","china"},call("china_status")).leaf=true
+		entry({"admin","services","shadowsocksr","foreign"},call("foreign_status")).leaf=true
 	
 end
 
@@ -83,16 +78,15 @@ if set == "gfw_data" then
        end
 elseif set == "ip_data" then
         
-         sret=luci.sys.call("/usr/share/shadowsocksr/update_chinaroute.sh")
-         icount = luci.sys.exec("cat /etc/ipset/china | wc -l")
-        if   tonumber(icount)>1000 then
-                
-                
-              
-                retstring=tostring(tonumber(icount))
-               
-                retstring ="0"
-               
+        sret=luci.sys.call("/usr/share/shadowsocksr/update_chinaroute.sh")
+        icount = luci.sys.exec("cat /etc/ipset/china | wc -l")
+	if   tonumber(icount)>1000 then
+		oldcount=luci.sys.exec("cat /etc/ipset/china | wc -l")
+		if tonumber(icount) ~= tonumber(oldcount) then
+			retstring=tostring(tonumber(icount))
+		else
+			retstring ="0"
+		end
         else
               retstring ="-1"
         end
