@@ -1,3 +1,5 @@
+-- Copyright (C) 2017 yushi By Alx
+-- Licensed to the public under the GNU General Public License v3.
 local e=require"nixio.fs"
 local t=require"luci.sys"
 m=Map("shadowsocksr")
