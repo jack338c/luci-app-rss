@@ -14,13 +14,20 @@ local pdnsd_flag=0
 
 local Pcap_Dns = 0
 
-local dns2socks = 1
+local dns2socks = 0
 
+local dnsproxy=0
+
+local dp=0
 
 
 
 if nixio.fs.access("/usr/bin/dns2socks") then
 	dns2sockss=1
+end
+
+if nixio.fs.access("/usr/bin/dnsproxy") then
+	dnsproxy=1
 end
 
 
@@ -165,13 +172,22 @@ o:value("gm", translate("游戏模式"))
 		o:value("3", translate("dns2socks"))
 	end
 	
+	if dnsproxy == 1 then
+		o:value("4", translate("dnsproxy"))
+		
+	end
 	o.rmempty = false
 end
 
-o = s:option(Value, "tunnel_forward", translate("DNS Server IP and Port"))
-o.default = "8.8.4.4:53"
-o.rmempty = false
 
+
+o = s:option(ListValue, "tunnel_forward", translate("DNS Server IP and Port"))
+o:value("8.8.8.8:53")
+o:value("8.8.4.4:53")
+o:value("208.67.220.220:443")
+o:value("208.67.222.222:5353")
+
+o.rmempty = false
 
 
 

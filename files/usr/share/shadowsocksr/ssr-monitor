@@ -151,4 +151,19 @@ do
 			/usr/sbin/pdnsd -c /var/etc/pdnsd.conf -d
       		fi   
       	fi 
+
+     	if [ $dns_process -eq 5 ] ;then
+      		icount=`ps -w  | grep dnsproxy |grep -v grep| wc -l`
+      		if [ $icount -lt 1 ]  #如果进程挂掉就重启它
+     	 	then
+      			logger -t "$NAME" "ssr dns tunnel error.restart!"
+      			killall -q dnsproxy
+			/usr/bin/dnsproxy \
+						-p 1053 \
+						-R $dnss \
+						-P $dnsp \
+						-d	\
+						>/dev/null 2>&1 &
+      		fi   
+      	fi 
 done

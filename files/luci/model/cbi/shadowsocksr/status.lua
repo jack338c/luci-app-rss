@@ -22,6 +22,7 @@ local gfwmode=0
 local dns2=0
 local pcap=0
 local pdnsd=0
+local dnsproxy=0
 
 local shadowsocksr = "shadowsocksr"
 -- html constants
@@ -75,6 +76,10 @@ end
 
 if luci.sys.call("pidof dns2socks >/dev/null") == 0 then
 	dns2=1
+end
+
+if luci.sys.call("pidof dnsproxy >/dev/null") == 0 then
+	dnsproxy=1
 end
 
 if luci.sys.call("pidof Pcap_DNSProxy >/dev/null") == 0 then
@@ -141,6 +146,9 @@ end
 
 if pcap == 1 then
 	m.value =font_blue ..  translate("Pcap_DNSProxy") ..  font_off
+end
+if dnsproxy == 1 then
+	m.value =font_blue ..  translate("dnsproxy ") ..  font_off
 end
 
 if kcptun_run == 1 then

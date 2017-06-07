@@ -373,6 +373,20 @@ add_dnsmasq(){
 				>/dev/null 2>&1 &
 			dns_enable_flag=2
 		;;
+		4)
+			
+			
+			dnss=`echo "$(uci_get_by_type global tunnel_forward 8.8.4.4:53)"|awk -F ':' '{print $1}'`
+			dnsp=`echo "$(uci_get_by_type global tunnel_forward 8.8.4.4:53)"|awk -F ':' '{print $2}'`
+			 /usr/bin/dnsproxy \
+						-p 1053 \
+						-R $dnss \
+						-P $dnsp \
+						-d	\
+						>/dev/null 2>&1 &
+			dns_enable_flag=5
+			
+		;;
 
          esac
 
@@ -452,6 +466,7 @@ stop() {
 	killall -q -9 ssr-redir
 	killall -q -9 ssr-tunnel
 	killall -q -9 ssr-local
+	killall -q -9 dnsproxy
 	killall -q  pdnsd
 	icount=`ps -w  | grep Pcap_DNSProxy |grep -v grep| wc -l`
 	if [ $icount -ge 1 ] ;then
